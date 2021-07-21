@@ -6,21 +6,45 @@ Data preprocessing pipeline:
 - Stores it in a SQLite database
 """
 import sys
-
+import pandas as pd
+import sqlalchemy as sa
 
 def load_data(messages_filepath, categories_filepath):
-    # !!!
-    return None
+    "reads messages and the corresponding categories from the specified files"
+    # read csv files
+    messages = pd.read_csv( "disaster_messages.csv" )
+    categories = pd.read_csv( "disaster_categories.csv" )
+
+    # merge both dataframes by message id
+    return messages.merge( categories, on="id")
 
 
-def clean_data(df):
-    # !!!
-    return None
+def clean_data( df ):
+    "prepares data to be stored in a database"
+
+    # drop duplicatesm by id because there exists more non-identical rows on the 
+    # category df that correspond to the same message, so they do not drop using
+    # drop_duplicates by all columns
+    df.drop_duplicates(["id"], inplace=True)
+
+    # create representation of categories to one-hot encoding
+    categories = df["categories"].str.split(";", expand=True)  
+    categories.columns = [ col[:-2] for col in categories.iloc[0] ]
+    categories = categories.apply(lambda col: pd.to_numeric(col.str[-1]))
+
+    # concat to original df and drop 'categories' column 
+    df = pd.concat([ df, categories ], axis=1).drop("related", axis=1)
+
+    return df
 
 
 def save_data(df, database_filename):
-    #!!!
-    pass  
+    "save df to a sqlite db"
+    # create conexion to db file
+    con = sa.create_engine( "sqlite:///{}".format(database_filename))
+    
+    # save data to db
+    df.to_sql("classified_messages", con=con)
 
 
 def main():
@@ -41,12 +65,13 @@ def main():
         print('Cleaned data saved to database!')
     
     else:
-        print('Please provide the filepaths of the messages and categories '\
-              'datasets as the first and second argument respectively, as '\
-              'well as the filepath of the database to save the cleaned data '\
-              'to as the third argument. \n\nExample: python process_data.py '\
-              'disaster_messages.csv disaster_categories.csv '\
-              'DisasterResponse.db')
+        print("""Please provide the filepaths of the messages and categories 
+              datasets as the first and second argument respectively, as 
+              well as the filepath of the database to save the cleaned data 
+              to as the third argument. Example: 
+              python process_data.py 
+              disaster_messages.csv disaster_categories.csv 
+              DisasterResponse.db""")
 
 
 if __name__ == '__main__':
