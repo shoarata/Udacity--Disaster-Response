@@ -33,7 +33,7 @@ def clean_data( df ):
     categories = categories.apply(lambda col: pd.to_numeric(col.str[-1]))
 
     # concat to original df and drop 'categories' column 
-    df = pd.concat([ df, categories ], axis=1).drop("related", axis=1)
+    df = pd.concat([ df, categories ], axis=1).drop("categories", axis=1)
 
     return df
 
@@ -44,7 +44,7 @@ def save_data(df, database_filename):
     con = sa.create_engine( "sqlite:///{}".format(database_filename))
     
     # save data to db
-    df.to_sql("classified_messages", con=con)
+    df.to_sql("classified_messages_training", con=con, index=False, if_exists="replace")
 
 
 def main():
@@ -62,7 +62,7 @@ def main():
         print('Saving data...\n    DATABASE: {}'.format(database_filepath))
         save_data(df, database_filepath)
         
-        print('Cleaned data saved to database!')
+        print('Data saved to database')
     
     else:
         print("""Please provide the filepaths of the messages and categories 
