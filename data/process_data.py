@@ -33,7 +33,7 @@ def clean_data( df ):
     categories.columns = [ col[:-2] for col in categories.iloc[0] ]
     categories.replace("[1-9]\d*$", "1", regex=True, inplace=True) # replacing numbers greater than 0 for 1
     categories = categories.apply(lambda col: pd.to_numeric(col.str[-1]))
-    
+    categories = categories[[c for c in categories.columns if len(categories[c].unique()) > 1]] # drop columns with 1 value
     # concat to original df and drop 'categories' column 
     df = pd.concat([ df, categories ], axis=1).drop("categories", axis=1)
 
@@ -71,9 +71,7 @@ def main():
               datasets as the first and second argument respectively, as 
               well as the filepath of the database to save the cleaned data 
               to as the third argument. Example: 
-              python process_data.py 
-              disaster_messages.csv disaster_categories.csv 
-              DisasterResponse.db""")
+              python process_data.py disaster_messages.csv disaster_categories.csv DisasterResponse.db""")
 
 
 if __name__ == '__main__':
