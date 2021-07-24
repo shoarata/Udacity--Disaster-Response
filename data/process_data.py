@@ -7,13 +7,14 @@ Data preprocessing pipeline:
 """
 import sys
 import pandas as pd
+from pandas.core.accessor import register_dataframe_accessor
 import sqlalchemy as sa
 
-def load_data(messages_filepath, categories_filepath):
+def load_data(messages_filepath="disaster_messages.csv", categories_filepath="disaster_categories.csv"):
     "reads messages and the corresponding categories from the specified files"
     # read csv files
-    messages = pd.read_csv( "disaster_messages.csv" )
-    categories = pd.read_csv( "disaster_categories.csv" )
+    messages = pd.read_csv( messages_filepath )
+    categories = pd.read_csv( categories_filepath )
 
     # merge both dataframes by message id
     return messages.merge( categories, on="id")
@@ -30,8 +31,9 @@ def clean_data( df ):
     # create representation of categories to one-hot encoding
     categories = df["categories"].str.split(";", expand=True)  
     categories.columns = [ col[:-2] for col in categories.iloc[0] ]
+    categories.replace("[1-9]\d*$", "1", regex=True, inplace=True) # replacing numbers greater than 0 for 1
     categories = categories.apply(lambda col: pd.to_numeric(col.str[-1]))
-
+    
     # concat to original df and drop 'categories' column 
     df = pd.concat([ df, categories ], axis=1).drop("categories", axis=1)
 
