@@ -1,0 +1,29 @@
+from app import app
+import dash
+import pickle
+import constants
+import pandas as pd
+import sqlalchemy as sa
+import dash_bootstrap_components as dbc
+
+# load list with categories available on db
+con = sa.create_engine("sqlite:///{}".format(constants.db_file_path))
+categories = list(pd.read_sql("PRAGMA table_info(classified_messages_training)", con)["name"])[4:]
+
+# load model
+with open(constants.model_file_path,"rb") as file:
+    model = pickle.load(file)
+
+
+@app.callback(
+    dash.dependencies.Output("classification_results_list", "children"),
+    dash.dependencies.Input("classify_button", "n_clicks"),
+    dash.dependencies.State("input_message", "value")
+)
+def classify_message(n_clicks, message):
+   "Classfigy message and output classfication results"
+   if n_clicks:
+       if message == "":
+           return [dbc.ListGroupItem("Please enter a valir message", color="danger")]
+       y_pred = model.predict([message])[0]
+       return [dbc.ListGroupItem(cat, color=("primary" if col == 1 else "")) for cat, col in zip(categories, y_pred)]
