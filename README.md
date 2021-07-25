@@ -15,7 +15,7 @@ from the data folder run:
 > python process_data.py disaster_messages.csv disaster_categories.csv DisasterResponse.db
 
 and then from the models folder run
-> train_classifier.py ../data/DisasterResponse.db model.pkl
+> python train_classifier.py ../data/DisasterResponse.db model.pkl
 
 ## Folder Structure
 ```

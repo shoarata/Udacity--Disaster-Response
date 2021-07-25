@@ -45,6 +45,8 @@ def build_model():
     }
 
     model = GridSearchCV(pipeline, parameters, n_jobs=-1, scoring='recall_micro')
+    
+    return model
 
 def evaluate_model(model, X_test, Y_test, category_names):
     "Prints evaluation metrics for the given model"
