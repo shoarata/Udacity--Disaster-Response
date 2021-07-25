@@ -6,6 +6,7 @@ import dash_html_components as html
 import plotly.express as px
 import pandas as pd
 import constants
+import data_utils
 
 PLOTLY_LOGO = "https://images.plot.ly/logo/new-branding/plotly-logomark.png"
 
@@ -50,6 +51,38 @@ prediction_page = html.Div([
                             [], id="classification_results_list"
                         ),
                         className="mt-5 mb-2 col-6 offset-3"
+                ))
+            ], fluid=True
+        )
+    ]
+)
+# Data Page
+df = data_utils.load_table("classified_messages_training")
+df["Count"] = 1
+frequency_by_category = df.iloc[:, 4:].sum().sort_values(ascending=False).to_frame().reset_index().rename(columns={"index": "Category", 0: "Frequency"})
+data_page = html.Div([
+        _navbar,
+        dbc.Container(
+            [
+                dbc.Row(dbc.Col(
+                    dbc.Card(
+                        [
+                            dcc.Graph(figure=px.bar(frequency_by_category, x="Category", y="Frequency", title="Classification Count By Category", color_discrete_sequence=["darkcyan"])),
+                            dbc.CardBody("This dataset is highly imbalanced...")
+                        ],
+                        className="mb-3",
+                    ),
+                    className="mt-5 mb-2 col-6 offset-3"
+                )),
+                dbc.Row(dbc.Col(
+                    dbc.Card(
+                        [
+                            dcc.Graph(figure=px.pie(df, names="genre", values="Count", title="Data Distribution By Genre", color_discrete_sequence=["indigo", "skyblue", "steelblue"])),
+                            dbc.CardBody("Data Distribution By Genre")
+                        ],
+                        className="mb-3",
+                    ),
+                    className="mt-5 mb-2 col-6 offset-3"
                 ))
             ], fluid=True
         )

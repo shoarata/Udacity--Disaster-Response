@@ -32,16 +32,19 @@ def load_data(database_filepath):
     return X, Y, list(Y.columns)
 
 def build_model():
-    """Builds ML pipeline using gradient boosting classifier with 180 estimators
-        
+    """Builds ML pipeline using gradient boosting classifier
+    
         Returns: Classification model        
     """
     pipeline = Pipeline([
         ("tfidfvectorize", TfidfVectorizer(tokenizer=tokenize)),
-        ("clf", MultiOutputClassifier(GradientBoostingClassifier(n_estimators=180)))
+        ("clf", MultiOutputClassifier(GradientBoostingClassifier()))
     ])
-    return pipeline
+    parameters = {
+        "clf__estimator__n_estimators": [100, 180]
+    }
 
+    model = GridSearchCV(pipeline, parameters, n_jobs=-1, scoring='recall_micro')
 
 def evaluate_model(model, X_test, Y_test, category_names):
     "Prints evaluation metrics for the given model"

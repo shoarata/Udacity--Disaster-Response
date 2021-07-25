@@ -2,13 +2,11 @@ from app import app
 import dash
 import pickle
 import constants
-import pandas as pd
-import sqlalchemy as sa
+import data_utils
 import dash_bootstrap_components as dbc
 
 # load list with categories available on db
-con = sa.create_engine("sqlite:///{}".format(constants.db_file_path))
-categories = list(pd.read_sql("PRAGMA table_info(classified_messages_training)", con)["name"])[4:]
+categories = data_utils.load_categories()
 
 # load model
 with open(constants.model_file_path,"rb") as file:
